@@ -189,6 +189,10 @@
 
         this._url = getProtocol(opts) + params.host + params.path;
         this._headers = {
+            // Don't try this at home
+            // Add SOAPAction here, because the classical method to add headers add them in the soap response wich
+            // does not work with the current wsdl of the api
+            'SOAPAction': 'http://tempuri.org/IExternalService/LivestockResultsDocumentAvailabilityNotice',
             'Content-Type': 'text/xml; charset=utf-8'
         };
 
