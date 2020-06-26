@@ -83,7 +83,25 @@
         assert.ok(params.method, 'no method given');
 
         const soapResponse = await SoapRequest(this._params, this._opts).call(params);
-        const methodParams = await this.getMethodParamsByName(params.method, this._params, this._opts);
+        // Dirty fix to make easysoap compatible with our packaging lib
+        const methodParams = {
+              request: [
+                  {
+                      params: [],
+                      name: 'parameters',
+                      namespace: 'tns',
+                      element: 'LivestockResultsDocumentAvailabilityNotice'
+                  }
+              ],
+              response: [
+                  {
+                      params: [],
+                      name: 'parameters',
+                      namespace: 'tns',
+                      element: 'LivestockResultsDocumentAvailabilityNoticeResponse'
+                  }
+              ]
+        };
 
         // get xml data as json, try to flatten the output
         let dataAsJson = this.getXmlDataAsJson(soapResponse.body);

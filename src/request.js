@@ -121,7 +121,25 @@
     async function getRequestParamsAsString (callParams = {}, baseParams = {}, opts = {}) {
         assert.ok(callParams.method, 'no method given');
 
-        const methodParams = await wsdlrdr.getMethodParamsByName(callParams.method, baseParamsToRequestParams(baseParams), opts);
+        // Dirty fix to make easysoap compatible with our packaging lib
+        const methodParams = {
+            request: [
+                {
+                    params: [],
+                    name: 'parameters',
+                    namespace: 'tns',
+                    element: 'LivestockResultsDocumentAvailabilityNotice'
+                }
+            ],
+            response: [
+                {
+                    params: [],
+                    name: 'parameters',
+                    namespace: 'tns',
+                    element: 'LivestockResultsDocumentAvailabilityNoticeResponse'
+                }
+            ]
+        };
         const requestParams = methodParams.request;
 
         const responseArray = [];
@@ -135,34 +153,60 @@
     }
 
     function getRequestEnvelopeParams (params, opts) {
-        return wsdlrdr.getNamespaces(params, opts)
-            .then((namespaces) => {
-                namespaces = _.filter(namespaces,
-                    (namespaceObj) => {
-                        return namespaceObj.short !== 'xmlns';
-                    }
-                );
+        // Dirty fix to make easysoap compatible with our packaging lib
+        const namespaces = [
+            { short: 'wsdl', full: 'http://schemas.xmlsoap.org/wsdl/' },
+            { short: 'wsx', full: 'http://schemas.xmlsoap.org/ws/2004/09/mex' },
+            {
+                short: 'wsu',
+                full: 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd'
+            },
+            { short: 'wsa10', full: 'http://www.w3.org/2005/08/addressing' },
+            {
+                short: 'wsp',
+                full: 'http://schemas.xmlsoap.org/ws/2004/09/policy'
+            },
+            {
+                short: 'wsap',
+                full: 'http://schemas.xmlsoap.org/ws/2004/08/addressing/policy'
+            },
+            {
+                short: 'msc',
+                full: 'http://schemas.microsoft.com/ws/2005/12/wsdl/contract'
+            },
+            {
+                short: 'soap12',
+                full: 'http://schemas.xmlsoap.org/wsdl/soap12/'
+            },
+            {
+                short: 'wsa',
+                full: 'http://schemas.xmlsoap.org/ws/2004/08/addressing'
+            },
+            {
+                short: 'wsam',
+                full: 'http://www.w3.org/2007/05/addressing/metadata'
+            },
+            { short: 'xsd', full: 'http://www.w3.org/2001/XMLSchema' },
+            { short: 'tns', full: 'http://tempuri.org/' },
+            { short: 'soap', full: 'http://schemas.xmlsoap.org/wsdl/soap/' },
+            {
+                short: 'wsaw',
+                full: 'http://www.w3.org/2006/05/addressing/wsdl'
+            },
+            {
+                short: 'soapenc',
+                full: 'http://schemas.xmlsoap.org/soap/encoding/'
+            }
+        ];
 
-                // add custom namespaces
-                if (params.headers !== void 0) {
-                    _.each(params.headers, function (headerItem, index) {
-                        var full = headerItem.namespace || headerItem.value;
-                        namespaces.push({
-                            'short': 'cns' + index,
-                            'full' : full
-                        });
-                    });
-                }
+        // var soap = _.findWhere(namespaces, { 'short': 'soap' });
+        var xsd = _.findWhere(namespaces, { 'short': 'xsd' }) || {};
 
-                // var soap = _.findWhere(namespaces, { 'short': 'soap' });
-                var xsd = _.findWhere(namespaces, { 'short': 'xsd' }) || {};
-
-                return {
-                    'soap_env'  : 'http://schemas.xmlsoap.org/soap/envelope/',
-                    'xml_schema': xsd.full || 'http://www.w3.org/2001/XMLSchema',
-                    'namespaces': namespaces
-                };
-            });
+        return {
+            'soap_env'  : 'http://schemas.xmlsoap.org/soap/envelope/',
+            'xml_schema': xsd.full || 'http://www.w3.org/2001/XMLSchema',
+            'namespaces': namespaces
+        };
     }
 
     function getRequestHeadParams (params = {}) {
